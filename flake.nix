@@ -43,9 +43,16 @@
     ];
   };
   outputs =
-    inputs@{ flake-parts, systems, ... }:
+    inputs@{
+      flake-parts,
+      nixpkgs,
+      systems,
+      ...
+    }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      flake.lib = import ./lib;
+      flake.lib = import ./lib {
+        inherit (nixpkgs) lib;
+      };
       imports = [
         ./treefmt.nix
         ./git-hooks.nix
