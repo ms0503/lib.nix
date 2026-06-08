@@ -10,6 +10,7 @@
         check.enable = true;
         settings = {
           hooks = {
+            actionlint.enable = true;
             editorconfig-checker = {
               enable = true;
               excludes = [
@@ -29,6 +30,8 @@
               enable = true;
               package = config.treefmt.build.wrapper;
             };
+            yamlfmt.enable = false; # breaks line length limit
+            yamllint.enable = true;
           };
           src = ./.;
         };
