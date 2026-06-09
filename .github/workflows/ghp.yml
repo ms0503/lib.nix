@@ -221,6 +221,7 @@ jobs:
       matrix:
         category:
           - ["build", "Build supports"]
+          - ["filters", "Source filter collection"]
   build:
     needs: "generate-category-docs"
     runs-on: "ubuntu-24.04"
