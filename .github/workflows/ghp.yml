@@ -199,18 +199,18 @@ jobs:
           signingKey: "${{ secrets.CACHIX_SIGNING_KEY }}"
       - name: "Generate pages"
         run: |
-          mkdir ./docs ./info
+          mkdir ./info
           nix run github:nix-community/nixdoc -- \
             -c "${{ matrix.category[0] }}" \
             -d "${{ matrix.category[1] }}" \
             -f "./lib/${{ matrix.category[0] }}.nix" \
-            >"./docs/${{ matrix.category[0] }}.md"
+            >"./docs/src/${{ matrix.category[0] }}.md"
           printf "${{ matrix.category[1] }}" >"./info/${{ matrix.category[0] }}"
       - name: "Upload page"
         uses: "actions/upload-artifact@v7"
         with:
           name: "docs-${{ matrix.category[0] }}"
-          path: "./docs/${{ matrix.category[0] }}.md"
+          path: "./docs/src/${{ matrix.category[0] }}.md"
       - name: "Upload info"
         uses: "actions/upload-artifact@v7"
         with:
@@ -238,25 +238,29 @@ jobs:
         uses: "actions/download-artifact@v8"
         with:
           merge-multiple: true
-          path: "./docs"
+          path: "./docs/src"
           pattern: "docs-*"
-      - run: "tree"
-      - name: "Generate root page"
+      - name: "Generate root page and summary"
         run: |
-          touch ./docs/index.md
           while IFS= read -d '' -r info; do
-            printf "\n## [%s](%s)\n\n" "${info^}" "$info" >>./docs/index.md
-            printf "%s\n" "$(cat "./info/$info")" >>./docs/index.md
+            printf "\n## [lib.%s](./%s.md)\n\n%s\n" \
+              "$info" "$info" "$(cat "./info/$info")" \
+              >>./docs/src/home.md
+            printf -- "- [lib.%s](./%s.md)\n" \
+              "$info" "$info" \
+              >>./docs/src/SUMMARY.md
           done < <(find ./info -type f -printf '%P\0')
+      - name: "Setup mdbook"
+        run: |
+          cargo install mdbook --no-default-features
       - name: "Build"
-        uses: "actions/jekyll-build-pages@v1"
-        with:
-          destination: "./docs/_site"
-          source: "./docs"
+        run: |
+          cd docs
+          mdbook build
       - name: "Upload"
         uses: "actions/upload-pages-artifact@v5"
         with:
-          path: "./docs/_site"
+          path: "./docs/book"
   deploy:
     environment:
       name: "github-pages"
@@ -264,9 +268,7 @@ jobs:
     if: >-
       github.event_name != 'pull_request' ||
       github.event.pull_request.merged == true
-    needs:
-      - "build"
-      - "generate-category-docs"
+    needs: "build"
     runs-on: "ubuntu-24.04"
     steps:
       - id: "deployment"
