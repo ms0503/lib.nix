@@ -242,6 +242,7 @@ jobs:
           pattern: "docs-*"
       - name: "Generate root page and summary"
         run: |
+          printf "\n" >>./docs/src/SUMMARY.md
           while IFS= read -d '' -r info; do
             printf "\n## [lib.%s](./%s.md)\n\n%s\n" \
               "$info" "$info" "$(cat "./info/$info")" \
