@@ -3,6 +3,7 @@ let
   categories = [
     "build"
     "filters"
+    "math"
   ];
 in
 categories

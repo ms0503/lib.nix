@@ -222,6 +222,7 @@ jobs:
         category:
           - ["build", "Build supports"]
           - ["filters", "Source filter collection"]
+          - ["math", "Math helpers"]
   build:
     needs: "generate-category-docs"
     runs-on: "ubuntu-24.04"
@@ -250,7 +251,7 @@ jobs:
             printf -- "- [lib.%s](./%s.md)\n" \
               "$info" "$info" \
               >>./docs/src/SUMMARY.md
-          done < <(find ./info -type f -printf '%P\0')
+          done < <(find ./info -type f -printf '%P\0' | sort -z)
       - name: "Setup mdbook"
         run: |
           cargo install mdbook --no-default-features
